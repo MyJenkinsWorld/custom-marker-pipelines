@@ -21,31 +21,56 @@ metadata:
 spec:
   containers:
   - name: nodejs
-    image: node:10.10.0-alpine
+    image: node:10.9.0-alpine
     command:
     - cat
     tty: true
-  - name: testcafe
+  - name: testcafe-chrome
     image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
     command:
     - cat
     tty: true
+  - name: testcafe-firefox
+    image: 946759952272.dkr.ecr.us-east-1.amazonaws.com/kypseli/testcafe:alpha-1
+    command:
+    - cat
+    tty: true
+    ports:
+    - name: firefox1
+      containerPort: 1339
+    - name: firefox2
+      containerPort: 1340
           """
         }
       }
-
-
-      steps {
-        checkout scm
-        container('nodejs') {
-          sh '''
-            npm install express
-            npm install pug --save
-            node ./hello.js &
-          '''
+      stages {
+        stage('App Setup') {
+          steps {
+            checkout scm
+            container('nodejs') {
+              sh '''
+                npm install express
+                npm install pug --save
+                node ./hello.js &
+              '''
+            }
+          }
         }
-        container('testcafe') {
-          sh '/opt/testcafe/docker/testcafe-docker.sh "chromium --no-sandbox,firefox" tests/*.js -r xunit:res.xml'
+        stage('Browser Tests') {
+          steps {
+            script {
+              parallel chrome: {
+                container('testcafe-chrome') {
+                  sh '/opt/testcafe/docker/testcafe-docker.sh "chromium --no-sandbox" tests/*.js -r xunit:res-chrome.xml'
+                }
+              },
+                  firefox: {
+                    container('testcafe-firefox') {
+                      sh '/opt/testcafe/docker/testcafe-docker.sh firefox --ports 1339,1340 tests/*.js -r xunit:res-firefox.xml'
+                    }
+                  }
+            }
+          }
         }
       }
       post {
@@ -53,7 +78,7 @@ spec:
           stash name: 'app', includes: '*.js, public/**, views/*, Dockerfile'
         }
         always {
-          junit 'res.xml'
+          junit 'res*.xml'
         }
       }
     }
@@ -83,4 +108,6 @@ spec:
   }
 
 }
+
+
 
