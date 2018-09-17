@@ -80,7 +80,7 @@ pipeline {
         branch 'master'
       }
       steps {
-        echo "Continuing with deployment"
+        kubeDeploy(env.IMAGE_NAME, env.IMAGE_TAG)
       }
     }
   }
