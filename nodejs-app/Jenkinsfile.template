@@ -3,6 +3,8 @@ pipeline {
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '2'))
+    skipDefaultCheckout true
+    preserveStashes(buildCount: 2)
   }
 
 
@@ -15,16 +17,22 @@ pipeline {
           sh 'node --version'
         }
       }
+      post {
+        success {
+          stash name: 'app', includes: '*.js, public/**, views/*, Dockerfile'
+        }
+      }
     }
 
     stage('Build and Push Image') {
+      agent any
       when {
         beforeAgent true
         branch 'master'
       }
       steps {
         echo "TODO - build and push image"
-        sh 'java -version'
+        unstash 'app'
       }
     }
     stage('Deploy') {
@@ -32,17 +40,11 @@ pipeline {
         beforeAgent true
         branch 'master'
       }
-      options {
-        timeout(time: 30, unit: 'SECONDS')
-      }
-      input {
-        message "Should we continue?"
-      }
       steps {
         echo "Continuing with deployment"
       }
     }
-
   }
+
 }
 
