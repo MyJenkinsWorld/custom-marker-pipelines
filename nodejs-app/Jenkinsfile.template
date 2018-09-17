@@ -62,18 +62,18 @@ pipeline {
     }
 
 
-    stage('Build and Push Image') {
-      agent any
+    sstage('Build and Push Image') {
       when {
         beforeAgent true
         branch 'master'
       }
       steps {
-        echo "TODO - build and push image"
-        unstash 'app'
-        sh 'java -version'
+        dockerBuildPush(env.IMAGE_NAME, env.IMAGE_TAG) {
+          unstash 'app'
+        }
       }
     }
+    
     stage('Deploy') {
       when {
         beforeAgent true
