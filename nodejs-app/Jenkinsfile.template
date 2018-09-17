@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'nodejs-app' }
+  agent none
 
   options {
     buildDiscarder(logRotator(numToKeepStr: '2'))
@@ -8,6 +8,7 @@ pipeline {
 
   stages {
     stage('Test') {
+      agent { label 'nodejs-app' }
       steps {
         container('nodejs') {
           echo 'Hello World!'
@@ -26,9 +27,20 @@ pipeline {
 //      sh 'java -version'
       }
     }
+    stage('Deploy') {
+      when {
+        beforeAgent true
+        branch 'master'
+      }
+      input {
+        message "Should we continue?"
+      }
+      steps {
+        echo "Continuing with deployment"
+      }
+    }
   }
 
 }
-
 
 
