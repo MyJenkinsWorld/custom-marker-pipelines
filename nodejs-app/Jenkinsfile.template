@@ -24,13 +24,16 @@ pipeline {
       }
       steps {
         echo "TODO - build and push image"
-//      sh 'java -version'
+        sh 'java -version'
       }
     }
     stage('Deploy') {
       when {
         beforeAgent true
         branch 'master'
+      }
+      options {
+        timeout(time: 30, unit: 'SECONDS')
       }
       input {
         message "Should we continue?"
@@ -39,8 +42,7 @@ pipeline {
         echo "Continuing with deployment"
       }
     }
+
   }
-
 }
-
 
