@@ -11,6 +11,10 @@ pipeline {
     preserveStashes(buildCount: 2)
   }
 
+  triggers {
+    eventTrigger simpleMatch('hello-api-push-event')
+  }
+
 
   stages {
 
@@ -84,6 +88,5 @@ pipeline {
       }
     }
   }
-
 }
 
